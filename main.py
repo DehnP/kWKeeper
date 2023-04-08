@@ -8,28 +8,15 @@ from readings import *
 from analytics import *
 from graphs import *
 
-
-
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-class App(customtkinter.CTk):
+
+class DatabaseManager:
     def __init__(self):
-        super().__init__()
-        self.standing_charge = 0.46
-        self.price_per_unit = 0.34
-        self.date_labels = []
-        # configure window
-        self.title("CTK Meter Reading Tracker")
-        # sql database setup
         self._create_db_connection()
         self._create_db_table()
-        # create widgets
-        self.create_widgets()
-        self._display_readings()
-        
 
-    # create database connection & table
     def _create_db_connection(self):
         self.conn = sqlite3.connect('readings.db')
         self.cursor = self.conn.cursor()
@@ -37,14 +24,28 @@ class App(customtkinter.CTk):
     def _create_db_table(self):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS readings
                             (reading REAL, date text)''')
-        self.conn.commit()    
+        self.conn.commit()
+
+
+class App(customtkinter.CTk, DatabaseManager):
+    def __init__(self):
+        customtkinter.CTk.__init__(self)
+        DatabaseManager.__init__(self)
+        self.standing_charge = 0.46
+        self.price_per_unit = 0.34
+        self.date_labels = []
+        # configure window
+        self.title("CTK Meter Reading Tracker")
+        # create widgets
+        self.create_widgets()
+        self._display_readings()
 
     def create_widgets(self):
         create_header(self)
         create_readings(self)
         create_analytics(self)
         create_graphs(self)
-   
+
     def _display_readings(self):
         self.date_labels = []
         self.listbox.delete(0, tkinter.END)
@@ -133,7 +134,6 @@ class App(customtkinter.CTk):
         else:
             return "N/A"
 
-
     def _get_avg_daily_cost(self, avg_daily_consump, price_per_unit):
         if avg_daily_consump != "N/A":
             return round(avg_daily_consump * price_per_unit + self.standing_charge,2)
@@ -208,12 +208,8 @@ class App(customtkinter.CTk):
             self.canvas.draw()
         else:
             tkinter.messagebox.showerror("Error", "Not enough data to plot graph")
-#=======================================================================================================================================
 
-#======MAIN==============================================================================================================================
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-
-
-    
