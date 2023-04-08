@@ -63,8 +63,8 @@ class App(customtkinter.CTk, DatabaseManager):
                 date1 = datetime.datetime.strptime(readings[i][1], '%d-%m-%Y')
                 date2 = datetime.datetime.strptime(readings[i-1][1], '%d-%m-%Y')
                 days = (date1 - date2).days
-                tkinter.Label(self.cost_diff_frame, text=round(diff * 0.34 + (self.standing_charge*days), 2), width=15, anchor='center').grid(row=i+1, column=3)
-                cost_per_day = round((diff * 0.34 / days) + self.standing_charge, 2)
+                tkinter.Label(self.cost_diff_frame, text=round(diff * self.price_per_unit + (self.standing_charge*days), 2), width=15, anchor='center').grid(row=i+1, column=3)
+                cost_per_day = round((diff * self.price_per_unit / days) + self.standing_charge, 2)
                 tkinter.Label(self.cost_per_day_frame, text=cost_per_day, width=15, anchor='center').grid(row=i+1, column=4)
 
             else:

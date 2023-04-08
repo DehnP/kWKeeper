@@ -26,6 +26,14 @@ def create_header(App: customtkinter.CTk) -> None:
     App.standing_charge_number_label = customtkinter.CTkLabel(App.button_frame, text=(str(App.standing_charge) + '/day'))
     App.standing_charge_number_label.grid(row=3, column=0, padx=(20, 20), pady=(0, 20), sticky="nsew")
 
+    # price per unit label
+    App.price_per_unit_label = customtkinter.CTkLabel(App.button_frame, text="Price per Unit (£)")
+    App.price_per_unit_label.grid(row=4, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
+    # price per unit number label
+    App.price_per_unit_number_label = customtkinter.CTkLabel(App.button_frame, text=(str(App.price_per_unit) + '/kWh'))
+    App.price_per_unit_number_label.grid(row=5, column=0, padx=(20, 20), pady=(0, 20), sticky="nsew")
+    
+
 
     # create tabview
     App.tab_view = customtkinter.CTkTabview(App, width=250)
