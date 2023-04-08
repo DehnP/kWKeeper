@@ -17,3 +17,8 @@ def create_graphs(App: customtkinter.CTk) -> None:
     # create a button to plot daily consumption vs time
     App.plot_button = customtkinter.CTkButton(App.tab_view.tab("Graphs"), text="Plot Daily Consumption vs Time", command=App._plot_daily_consumption_vs_time)
     App.plot_button.grid(row=2, column=0, pady=(20, 20))
+
+    # create a button to plot daily cost vs time
+    App.plot_button = customtkinter.CTkButton(App.tab_view.tab("Graphs"), text="Plot Daily Cost vs Time", command=App._plot_daily_cost_vs_time)
+    App.plot_button.grid(row=3, column=0, pady=(20, 20))
+    

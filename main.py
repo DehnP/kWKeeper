@@ -17,6 +17,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.standing_charge = 0.46
+        self.price_per_unit = 0.34
         self.date_labels = []
         # configure window
         self.title("CTK Meter Reading Tracker")
@@ -140,38 +141,70 @@ class App(customtkinter.CTk):
             return "N/A"
 
     def _plot_readings_vs_time(self):
+        import matplotlib.dates as mdates
         self.cursor.execute("SELECT * FROM readings")
         readings = self.cursor.fetchall()
         if len(readings) > 1:
             readings.sort(key=lambda x: datetime.datetime.strptime(x[1], '%d-%m-%Y'))
             dates = [datetime.datetime.strptime(reading[1], '%d-%m-%Y') for reading in readings]
             readings = [reading[0] for reading in readings]
+            # zero the y-axis
+            readings = [r - readings[0] for r in readings]
             self.fig.clf()
             self.axes = self.fig.add_subplot(111)
             self.axes.plot(dates, readings)
+            self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%b - %y'))
+            self.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=2))     
             # add labels
-            self.axes.set_xlabel("Date")
-            self.axes.set_ylabel("Reading")
+            self.axes.set_ylabel("Reading (kWh)")
             self.axes.set_title("Readings vs Time")
+            self.axes.grid(axis='y', linestyle='--', alpha=0.7)
             self.canvas.draw()
         else:
             tkinter.messagebox.showerror("Error", "Not enough data to plot graph")
 
     def _plot_daily_consumption_vs_time(self):
+        import matplotlib.dates as mdates
         self.cursor.execute("SELECT * FROM readings")
         readings = self.cursor.fetchall()
         if len(readings) > 1:
             readings.sort(key=lambda x: datetime.datetime.strptime(x[1], '%d-%m-%Y'))
             dates = [datetime.datetime.strptime(reading[1], '%d-%m-%Y') for reading in readings]
             readings = [reading[0] for reading in readings]
-            daily_consumption = [readings[i+1] - readings[i] for i in range(len(readings)-1)]
+            daily_consumption = [(readings[i+1] - readings[i]) / (dates[i+1] - dates[i]).days for i in range(len(readings)-1)]
             self.fig.clf()
             self.axes = self.fig.add_subplot(111)
             self.axes.plot(dates[1:], daily_consumption)
+            self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%b - %y'))
+            self.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
             # add labels
-            self.axes.set_xlabel("Date")
-            self.axes.set_ylabel("Daily Consumption")
+            self.axes.set_ylabel("Daily Consumption (kWh)")
             self.axes.set_title("Daily Consumption vs Time")
+            self.axes.grid(axis='y', linestyle='--', alpha=0.7)
+            self.canvas.draw()
+        else:
+            tkinter.messagebox.showerror("Error", "Not enough data to plot graph")
+
+    def _plot_daily_cost_vs_time(self):
+        import matplotlib.dates as mdates
+        self.cursor.execute("SELECT * FROM readings")
+        readings = self.cursor.fetchall()
+        if len(readings) > 1:
+            readings.sort(key=lambda x: datetime.datetime.strptime(x[1], '%d-%m-%Y'))
+            dates = [datetime.datetime.strptime(reading[1], '%d-%m-%Y') for reading in readings]
+            readings = [reading[0] for reading in readings]
+            daily_consumption = [(readings[i+1] - readings[i]) / (dates[i+1] - dates[i]).days for i in range(len(readings)-1)]
+            daily_cost = [consumption * self.price_per_unit + self.standing_charge for consumption in daily_consumption]
+            self.fig.clf()
+            self.axes = self.fig.add_subplot(111)
+            self.axes.plot(dates[1:], daily_cost)
+            self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%b - %y'))
+             # set tick interval to every other month
+            self.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+            # add labels
+            self.axes.set_ylabel("Daily Cost (£)")
+            self.axes.set_title("Daily Cost vs Time")
+            self.axes.grid(axis='y', linestyle='--', alpha=0.7)
             self.canvas.draw()
         else:
             tkinter.messagebox.showerror("Error", "Not enough data to plot graph")
